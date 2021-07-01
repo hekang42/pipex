@@ -1,43 +1,28 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   redirect.c                                         :+:      :+:    :+:   */
+/*   get_next_line.h                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: hekang <hekang@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2021/07/01 14:27:46 by hekang            #+#    #+#             */
-/*   Updated: 2021/07/01 16:22:36 by hekang           ###   ########.fr       */
+/*   Created: 2020/10/08 19:12:45 by hekang            #+#    #+#             */
+/*   Updated: 2021/06/22 19:45:10 by hekang           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "pipex.h"
+#ifndef GET_NEXT_LINE_H
+# define GET_NEXT_LINE_H
 
-int		redirect_in(const char *file)
-{
-	int	fd;
+# ifndef BUFFER_SIZE
+#  define BUFFER_SIZE 500
+# endif
 
-	fd = open(file, O_RDONLY);
-	if (fd < 0)
-	{
-		perror(file);
-		exit(1);
-	}
-	dup2(fd, STDIN_FILENO);
-	close(fd);
-	return (0);
-}
+# include <stdlib.h>
+# include <limits.h>
+# include <unistd.h>
+# include "libft.h"
 
-int		redirect_out(const char *file)
-{
-	int	fd;
+int		get_next_line(int fd, char **line);
+int		checknl(char *s);
 
-	fd = open(file, O_RDWR | O_CREAT | O_TRUNC, 0644);
-	if (fd < 0)
-	{
-		perror(file);
-		return (-1);
-	}
-	dup2(fd, STDOUT_FILENO);
-	close(fd);
-	return (0);
-}
+#endif
