@@ -6,47 +6,43 @@
 /*   By: hekang <hekang@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/07/01 14:27:46 by hekang            #+#    #+#             */
-/*   Updated: 2021/07/01 17:16:24 by hekang           ###   ########.fr       */
+/*   Updated: 2021/07/02 12:36:48 by hekang           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "pipex.h"
 
-int		redirect_in(const char *file)
+void		clear_temp(void)
 {
-	int	fd;
-	char	*line;
-	char	*result;
+	char **argv;
 
-	line = NULL;
-	result = NULL;
-	fd = open(file, O_RDONLY);
-	write(1, "heredoc> ", 9);
-	get_next_line(0, &line);
-	result = ft_strjoin(result, line);
-	printf("%s\n", result);
-	//gnl 사용하여 입력값이 limiter와 일치할때 멈춤.
-	// if (fd < 0)
-	// {
-	// 	perror(file);
-	// 	exit(1);
-	// }
-	// dup2(fd, STDIN_FILENO);
-	// close(fd);
-	return (0);
+	argv = malloc(sizeof(char *) * 3);
+	argv[0] = "-f";
+	argv[1] = "./temp";
+	argv[2] = NULL;
+	if (fork() == 0)
+		execve("/bin/rm", (char *const *)argv, NULL);
 }
 
-int		redirect_out(const char *file)
+void		heredoc(char **argv)
 {
-	int	fd;
+	char	*limiter;
+	char	*line;
+	int		fd;
 
-	fd = open(file, O_RDWR | O_CREAT | O_APPEND, 0644);
-	if (fd < 0)
+	line = NULL;
+	limiter = argv[2];
+	fd = open("./temp", O_CREAT | O_RDWR | O_TRUNC, 0644);
+	write(STDOUT_FILENO, "heredoc> ", 9);
+	while (get_next_line(0, &line) != 0)
 	{
-		perror(file);
-		return (-1);
+		if (!ft_strncmp(limiter, line, ft_strlen(limiter)))
+			break ;
+		write(STDOUT_FILENO, "heredoc> ", 9);
+		write(fd, line, ft_strlen(line));
+		write(fd, "\n", 1);
 	}
-	dup2(fd, STDOUT_FILENO);
 	close(fd);
-	return (0);
+	redirect_in("./temp");
+	clear_temp();
 }

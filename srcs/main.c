@@ -6,7 +6,7 @@
 /*   By: hekang <hekang@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/07/01 10:13:05 by hekang            #+#    #+#             */
-/*   Updated: 2021/07/01 16:51:50 by hekang           ###   ########.fr       */
+/*   Updated: 2021/07/02 12:36:07 by hekang           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,29 +44,53 @@ static void		run_cmd(const char *cmd, t_cmd *cmd_arg)
 	perror(cmd_arg->argv[0]);
 }
 
+int				init_input(t_input *input, int argc, char **argv)
+{
+	if (argc == 5)
+	{
+		input->f1 = argv[1];
+		input->f2 = argv[4];
+		input->cmd1 = argv[2];
+		input->cmd2 = argv[3];
+	}
+	else if (argc == 6)
+	{
+		if (ft_strncmp(argv[1], "here_doc", 9))
+			return (0);
+		input->f2 = argv[5];
+		input->cmd1 = argv[3];
+		input->cmd2 = argv[4];
+	}
+	else
+		return (0);
+	return (1);
+}
+
 int				main(int argc, char **argv)
 {
 	int			pipefd[2];
 	pid_t		pid;
 	t_cmd		cmd;
-	int			status;
+	t_input		input;
 
-	if (argc != 5)
+	if (!init_input(&input, argc, argv))
 		return (0);
 	pipe(pipefd);
 	pid = fork();
 	if (pid > 0)
 	{
-		waitpid(pid, &status, 0);
-		redirect_out(argv[4]);
+		redirect_out(input.f2, argc);
 		connect_pipe(pipefd, STDIN_FILENO);
-		run_cmd(argv[3], &cmd);
+		run_cmd(input.cmd2, &cmd);
 	}
 	else if (pid == 0)
 	{
-		redirect_in(argv[1]);
+		if (argc == 6)
+			heredoc(argv);
+		else
+			redirect_in(input.f1);
 		connect_pipe(pipefd, STDOUT_FILENO);
-		run_cmd(argv[2], &cmd);
+		run_cmd(input.cmd1, &cmd);
 	}
 	return (0);
 }
